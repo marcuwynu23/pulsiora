@@ -1,0 +1,78 @@
+# Rust build artifacts
+/target/
+**/*.rs.bk
+*.pdb
+
+# Cargo
+Cargo.lock
+
+# IDE - VSCode
+.vscode/
+*.code-workspace
+
+# IDE - JetBrains
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# IDE - Vim
+*.swp
+*.swo
+*~
+
+# IDE - Emacs
+*~
+\#*\#
+.\#*
+
+# OS - macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# OS - Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# OS - Linux
+*~
+.directory
+.Trash-*
+
+# Debugging
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Generated files
+**/*.generated.*
+
+# Logs
+*.log
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Test coverage
+tarpaulin-report.html
+coverage/
+*.gcda
+*.gcno
+*.gcov
+
+# Pulsefile (if users want to keep their local one separate)
+# Pulsefile
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+
