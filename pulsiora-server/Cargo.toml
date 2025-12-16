@@ -1,0 +1,24 @@
+[package]
+name = "pulsiora-server"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+pulsiora-core = { path = "../pulsiora-core" }
+pulsiora-parser = { path = "../pulsiora-parser" }
+pulsiora-runner = { path = "../pulsiora-runner" }
+tokio = { workspace = true }
+axum = { workspace = true }
+tower = { workspace = true }
+tower-http = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+octocrab = { workspace = true }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+uuid = { workspace = true }
+chrono = { workspace = true }
+reqwest = { workspace = true }
+

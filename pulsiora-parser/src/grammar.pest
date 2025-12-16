@@ -1,0 +1,71 @@
+// Pulsefile grammar for pest parser
+WHITESPACE = _{ " " | "\t" | "\r" | "\n" }
+COMMENT = _{ "#" ~ (!"\n" ~ ANY)* }
+
+identifier = { ASCII_ALPHANUMERIC | "_" | "-" }
+identifier_ext = { identifier ~ (identifier | ".")* }
+
+string_literal = { "\"" ~ (!"\"" ~ ANY)* ~ "\"" }
+multiline_string = { "\"\"\"" ~ (!"\"\"\"" ~ ANY)* ~ "\"\"\"" }
+
+boolean = { "true" | "false" }
+
+value = {
+    string_literal |
+    multiline_string |
+    boolean |
+    identifier_ext
+}
+
+// Pipeline structure
+file = { SOI ~ pipeline ~ EOI }
+
+pipeline = {
+    "pipeline" ~ "{" ~
+        pipeline_metadata ~
+        triggers ~
+        steps ~
+    "}"
+}
+
+pipeline_metadata = {
+    ("name" ~ ":" ~ string_literal ~ ";")? ~
+    ("version" ~ ":" ~ string_literal ~ ";")?
+}
+
+// Triggers
+triggers = {
+    "triggers" ~ "{" ~
+        git_triggers ~
+    "}"
+}
+
+git_triggers = {
+    "git" ~ "{" ~
+        ("on_push" ~ ":" ~ boolean ~ ";")? ~
+        ("on_pull_request" ~ ":" ~ boolean ~ ";")? ~
+        ("on_merge" ~ ":" ~ boolean ~ ";")? ~
+        ("on_tag" ~ ":" ~ boolean ~ ";")? ~
+        ("on_release" ~ ":" ~ boolean ~ ";")? ~
+        ("on_branch_create" ~ ":" ~ boolean ~ ";")? ~
+        ("on_branch_delete" ~ ":" ~ boolean ~ ";")? ~
+        ("branches" ~ ":" ~ "[" ~ branch_list ~ "]")? ~
+    "}"
+}
+
+branch_list = { (string_literal ~ ("," ~ string_literal)*)? }
+
+// Steps
+steps = {
+    "steps" ~ "{" ~
+        (step*)
+    ~ "}"
+}
+
+step = {
+    "step" ~ string_literal ~ "{" ~
+        ("run" ~ ":" ~ multiline_string ~ ";")? ~
+        ("allow_failure" ~ ":" ~ boolean ~ ";")? ~
+    "}"
+}
+

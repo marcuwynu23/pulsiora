@@ -1,0 +1,16 @@
+[package]
+name = "pulsiora-runner"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+pulsiora-core = { path = "../pulsiora-core" }
+pulsiora-parser = { path = "../pulsiora-parser" }
+tokio = { workspace = true }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+which = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+

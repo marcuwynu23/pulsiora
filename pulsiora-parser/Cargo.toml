@@ -1,0 +1,13 @@
+[package]
+name = "pulsiora-parser"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+pulsiora-core = { path = "../pulsiora-core" }
+pest = { workspace = true }
+pest_derive = { workspace = true }
+serde = { workspace = true }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+
