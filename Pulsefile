@@ -1,0 +1,64 @@
+pipeline {
+  name: "sample-pipeline";
+  version: "1.0";
+  
+  triggers {
+    git {
+      on_push: true;
+      on_pull_request: true;
+      on_merge: false;
+      on_tag: false;
+      on_release: false;
+      on_branch_create: false;
+      on_branch_delete: false;
+      branches: ["main", "develop", "feature/*"];
+    }
+  }
+  
+  steps {
+    step "setup" {
+      run: """
+        echo "Setting up build environment"
+        echo "Current directory: $(pwd)"
+        echo "Git branch: $BRANCH_NAME"
+        echo "Commit SHA: $COMMIT_SHA"
+      """;
+    }
+    
+    step "build" {
+      run: """
+        echo "Building application..."
+        # Simulate build process
+        cargo build --verbose
+        echo "Build completed successfully"
+      """;
+    }
+    
+    step "test" {
+      run: """
+        echo "Running tests..."
+        # Simulate test execution
+        cargo test --verbose
+        echo "Tests completed"
+      """;
+      allow_failure: false;
+    }
+    
+    step "deploy-staging" {
+      run: """
+        echo "Deploying to staging environment"
+        # This would deploy to your staging environment
+        echo "Deployment to staging completed"
+      """;
+      allow_failure: true;
+    }
+    
+    step "notify" {
+      run: """
+        echo "Sending notification"
+        # This would send a notification (Slack, email, etc.)
+        echo "Pipeline execution completed: $PIPELINE_STATUS"
+      """;
+    }
+  }
+}

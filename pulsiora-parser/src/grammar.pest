@@ -36,11 +36,11 @@ pipeline_metadata = {
 // Triggers
 triggers = {
     "triggers" ~ "{" ~
-        git_triggers ~
+        git ~
     "}"
 }
 
-git_triggers = {
+git = {
     "git" ~ "{" ~
         ("on_push" ~ ":" ~ boolean ~ ";")? ~
         ("on_pull_request" ~ ":" ~ boolean ~ ";")? ~

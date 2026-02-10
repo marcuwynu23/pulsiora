@@ -1,0 +1,12 @@
+pipeline {
+  name: "test";
+  version: "1.0";
+  
+  triggers {
+    git {
+    }
+  }
+  
+  steps {
+  }
+}

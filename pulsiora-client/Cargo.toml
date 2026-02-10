@@ -9,6 +9,8 @@ path = "src/main.rs"
 
 [dependencies]
 pulsiora-core = { path = "../pulsiora-core" }
+pulsiora-parser = { path = "../pulsiora-parser" }
+pulsiora-runner = { path = "../pulsiora-runner" }
 tokio = { workspace = true }
 clap = { workspace = true }
 reqwest = { workspace = true }

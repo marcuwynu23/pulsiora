@@ -88,7 +88,7 @@ fn parse_triggers(pair: pest::iterators::Pair<Rule>) -> Result<Triggers> {
     let mut git_triggers = GitTriggers::default();
 
     for inner_pair in pair.into_inner() {
-        if inner_pair.as_rule() == Rule::git_triggers {
+        if inner_pair.as_rule() == Rule::git {
             git_triggers = parse_git_triggers(inner_pair)?;
         }
     }
@@ -188,7 +188,13 @@ fn unquote_string(s: &str) -> String {
 }
 
 fn unquote_multiline_string(s: &str) -> String {
-    s.trim_matches('"').trim().to_string()
+    s.trim()
+        .strip_prefix("\"\"\"")
+        .unwrap_or(s)
+        .strip_suffix("\"\"\"")
+        .unwrap_or(s)
+        .trim()
+        .to_string()
 }
 
 #[cfg(test)]

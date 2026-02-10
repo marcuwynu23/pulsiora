@@ -312,6 +312,7 @@ struct RegisterRepoRequest {
     repo_url: String,
     repo_identifier: String,
     pulsefile: String,
+    repo_type: Option<String>, // "github", "local", or other SCM type
 }
 
 #[derive(Serialize)]
@@ -329,10 +330,17 @@ async fn register_repo(
         return Err(StatusCode::BAD_REQUEST);
     }
 
+    let repo_type = match req.repo_type.as_deref() {
+        Some("local") => storage::RepoType::Local,
+        Some(other) => storage::RepoType::Other(other.to_string()),
+        None => storage::RepoType::GitHub, // Default to GitHub
+    };
+
     let repo = storage::RegisteredRepo {
         repo_url: req.repo_url.clone(),
         repo_identifier: req.repo_identifier.clone(),
         pulsefile: req.pulsefile,
+        repo_type,
     };
 
     {

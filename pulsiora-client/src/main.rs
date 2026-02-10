@@ -1,5 +1,7 @@
 use clap::{Parser, Subcommand};
 use pulsiora_core::PipelineExecution;
+use pulsiora_parser::parse_pulsefile;
+use pulsiora_runner::PipelineExecutor;
 use reqwest::Client;
 use serde_json::json;
 use std::fs;
@@ -42,6 +44,21 @@ enum Commands {
 
     /// List all pipeline executions
     List,
+    
+    /// Manually execute a Pulsefile
+    Run {
+        /// Path to Pulsefile
+        #[arg(short, long, default_value = "Pulsefile")]
+        pulsefile: String,
+        
+        /// Repository URL (for logging purposes)
+        #[arg(short, long, default_value = "local/repo")]
+        repo_url: String,
+        
+        /// Branch name (for logging purposes)
+        #[arg(short, long, default_value = "main")]
+        branch: String,
+    },
 }
 
 #[derive(Subcommand)]
@@ -54,6 +71,10 @@ enum RepoCommands {
         /// Path to Pulsefile (defaults to ./Pulsefile)
         #[arg(short, long, default_value = "Pulsefile")]
         pulsefile: String,
+        
+        /// Repository type (github, local, or other SCM)
+        #[arg(short, long, default_value = "github")]
+        repo_type: String,
     },
 
     /// Unregister repository
@@ -110,8 +131,8 @@ async fn main() -> anyhow::Result<()> {
             generate_pulsefile_template()?;
         }
         Commands::Repo(cmd) => match cmd {
-            RepoCommands::Add { repo_url, pulsefile } => {
-                register_repo(&client, &cli.server, &repo_url, &pulsefile).await?;
+            RepoCommands::Add { repo_url, pulsefile, repo_type } => {
+                register_repo(&client, &cli.server, &repo_url, &pulsefile, &repo_type).await?;
             }
             RepoCommands::Remove { repo_url } => {
                 unregister_repo(&client, &cli.server, &repo_url).await?;
@@ -136,6 +157,9 @@ async fn main() -> anyhow::Result<()> {
                 eprintln!("Failed to get execution: {}", response.status());
                 process::exit(1);
             }
+        }
+        Commands::Run { pulsefile, repo_url, branch } => {
+            manual_run_pulsefile(&pulsefile, &repo_url, &branch).await?;
         }
         Commands::List => {
             let url = format!("{}/api/v1/executions", cli.server);
@@ -288,6 +312,7 @@ async fn register_repo(
     server: &str,
     repo_url: &str,
     pulsefile_path: &str,
+    repo_type: &str,
 ) -> anyhow::Result<()> {
     // Read Pulsefile
     let pulsefile_content = fs::read_to_string(pulsefile_path)
@@ -301,6 +326,7 @@ async fn register_repo(
         "repo_url": repo_url,
         "repo_identifier": repo_identifier,
         "pulsefile": pulsefile_content,
+        "repo_type": repo_type,
     });
 
     let response = client
@@ -439,5 +465,58 @@ fn normalize_repo_identifier(repo: &str) -> String {
     
     // Already in owner/repo format or just repo name
     repo.to_string()
+}
+
+async fn manual_run_pulsefile(pulsefile_path: &str, repo_url: &str, branch: &str) -> anyhow::Result<()> {
+    // Read Pulsefile
+    let pulsefile_content = fs::read_to_string(pulsefile_path)
+        .map_err(|e| anyhow::anyhow!("Failed to read Pulsefile at {}: {}", pulsefile_path, e))?;
+    
+    // Parse Pulsefile
+    let pipeline = parse_pulsefile(&pulsefile_content)
+        .map_err(|e| anyhow::anyhow!("Failed to parse Pulsefile: {}", e))?;
+    
+    println!("✅ Pulsefile parsed successfully!");
+    println!("📋 Pipeline: {} v{}", pipeline.name, pipeline.version);
+    println!("📁 Repository: {}", repo_url);
+    println!("🌿 Branch: {}", branch);
+    println!("🔢 Steps: {}", pipeline.steps.len());
+    
+    // Create a mock GitEvent for manual execution
+    let git_event = pulsiora_core::GitEvent {
+        event_type: pulsiora_core::GitEventType::Push,
+        repository: pulsiora_core::Repository {
+            owner: "local".to_string(),
+            name: "repo".to_string(),
+            full_name: repo_url.to_string(),
+            clone_url: repo_url.to_string(),
+            default_branch: branch.to_string(),
+        },
+        branch: Some(branch.to_string()),
+        tag: None,
+        pull_request: None,
+        commit_sha: Some("manual-execution".to_string()),
+        sender: "manual".to_string(),
+    };
+    
+    println!("\n🚀 Starting manual pipeline execution...\n");
+    
+    // Execute the pipeline using the runner
+    let executor = PipelineExecutor::new();
+    let execution = executor.execute(&pipeline, &git_event).await
+        .map_err(|e| anyhow::anyhow!("Pipeline execution failed: {}", e))?;
+    
+    println!("\n✅ Pipeline execution completed!");
+    println!("📊 Status: {:?}", execution.status);
+    println!("⏱️  Duration: {:?}", execution.completed_at.unwrap() - execution.started_at);
+    
+    if execution.status == pulsiora_core::PipelineStatus::Success {
+        println!("🎉 Pipeline executed successfully!");
+    } else {
+        println!("❌ Pipeline failed!");
+        process::exit(1);
+    }
+    
+    Ok(())
 }
 

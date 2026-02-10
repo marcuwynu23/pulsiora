@@ -2,12 +2,21 @@ use pulsiora_core::PipelineExecution;
 use std::collections::HashMap;
 use uuid::Uuid;
 
+/// Repository type
+#[derive(Debug, Clone, PartialEq)]
+pub enum RepoType {
+    GitHub,
+    Local,
+    Other(String), // Other SCM systems
+}
+
 /// Repository registration information
 #[derive(Debug, Clone)]
 pub struct RegisteredRepo {
     pub repo_url: String,
     pub repo_identifier: String, // owner/repo format
     pub pulsefile: String,
+    pub repo_type: RepoType,
 }
 
 /// In-memory storage for pipeline executions and registered repos
